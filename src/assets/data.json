@@ -1,0 +1,20 @@
+{
+  "grades": [
+    {
+      "title": "pup1",
+      "levle": [
+        {
+          "title": "A"
+        }
+      ]
+    },
+    {
+      "title": "class1",
+      "levle": [
+        {
+          "title": "A"
+        }
+      ]
+    }
+  ]
+}
