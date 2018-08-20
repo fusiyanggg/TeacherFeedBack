@@ -7,13 +7,16 @@ const grades = new Schema({
   grade_name: String,
   create_time: {type: Date, default: Date.now},
   _index: {type: Number},
-  lessions: {
-    lession_name: String,
-    _index: Number,
-    create_time: {type: Date},
-    creator: String
-  }
+  lessions: [
+    {
+      lession_name: {type: String, index: true},
+      create_time: {type: Date, default: Date.now},
+      creator: String
+    }
+  ]
 });
+
+grades.index({id: 1}); //添加索引
 
 const gradesModel = mongoose.model('grades', grades);
 module.exports = gradesModel;

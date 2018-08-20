@@ -15,7 +15,8 @@
       </Menu>
 
       <transition name=slide-fade>
-        <AddGroup class="modal-add" v-if="modal" :group-data="addGroupData" @hide="handleSwitchHide"></AddGroup>
+        <AddGroup class="modal-add" v-if="modal" :group-data="addGroupData" @hide="handleSwitchHide"
+                  @load-grad=""></AddGroup>
 
       </transition>
       <div class="add-grade" @click="handleSwitchHide">
@@ -38,8 +39,8 @@
   </div>
 </template>
 <script>
-  import axios from 'axios'
   import AddGroup from './form/AddGroup'
+  import utils from '../tools/utils'
 
   export default {
     data() {
@@ -65,17 +66,21 @@
       },
       handleSwitchHide() {
         this.modal = !this.modal
+      },
+      loadData() {
+        return utils.loadData()
       }
 
     },
-    async beforeMount() {
+   async beforeMount() {
       let lastOpen = localStorage.getItem('last-select');
       if (lastOpen) {
         this.lastOpen = lastOpen;
         this.bread = this.lastOpen.split('-');
       }
 
-      let res = await axios.get(window.location.protocol + "//" + window.location.hostname + ':9000/grades/all');
+      //let res = await axios.get(window.location.protocol + "//" + window.location.hostname + ':9000/grades/all');
+      let res =await utils.loadData();
       console.log(res);
       this.grades = res.data;
 
