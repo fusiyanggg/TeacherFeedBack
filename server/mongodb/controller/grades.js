@@ -7,54 +7,77 @@ class Grades {
 
   async createGrades(req, res, next) {
 
-    const {grade_name, lession_name} = req.body;
+    const {grade_name, lesson_name} = req.body;
 
-    var query = gradesModel.findOne({grade_name});
-    assert.ok(!(query instanceof Promise))
+    if (grade_name && lesson_name) {
+      let insertData = {
+        grade_name, lesson_name, creator: 'default'
+      };
 
-    query.then(function (doc) {
-      console.log(typeof doc,111);
-    })
+      gradesModel.findOne({grade_name}, function (err, doc) {
+        if (err) console.log(err);
+        if (doc) {
+          let ary = doc.get('lessons')
+          let les = ary.find(v => v.lesson_name == lesson_name);
+          if (!les) {
+            ary.push({lesson_name, creator: 'default'});
+            doc.save();
+            res.json({
+              status: 200,
+              message: 'ok',
+              data: doc
+            })
+          } else {
+            res.json({
+              status: 400,
+              message: 'grades and lesson is already exits'
+            })
+          }
+        } else {
+          gradesModel.create({grade_name, lessons: [{lesson_name, creator: 'default'}]}, function (err, doc) {
+            res.json({
+              status: 200,
+              message: 'ok',
+              data: doc
+            })
+          })
+        }
 
-    var promise = query.exec();
-    promise.then(function (doc) {
-      console.log(typeof doc,222);
-    })
+      });
+      //检测是否存在组
+      // gradesModel.update({grade_name}, {
+      //   $push: {
+      //     "lessons": {
+      //       lesson_name: lessons,
+      //       creator: 'fsy'
+      //     }
+      //   }
+      // }, function (err) {
+      //   if (err) console.log(err)
+      //
+      //
+      // })
 
-    // if (grade_name && lession_name) {
-    //   //检测是否存在组
-    //   gradesModel.update({grade_name}, {
-    //     $push: {
-    //       "lessions": {
-    //         lession_name: lessions,
-    //         creator: 'fsy'
-    //       }
-    //     }
-    //   }, function (err) {
-    //     if (err) console.log(err)
-    //
-    //
-    //   })
-    //
-    //   // gradesModel.create({grade_name, lessions: {lesson_name: lessions}}).then(data => {
-    //   //   res.json({status: 200, text: 'ok', data})
-    //   // })
-    // }
+      // gradesModel.create({grade_name, lessons: {lesson_name: lessons}}).then(data => {
+      //   res.json({status: 200, text: 'ok', data})
+      // })
+    } else {
+      res.json({
+        status: 400,
+        message: 'parameter error'
+      })
+    }
 
-
-    // res.json(req.body)
-    // if (grade_name && lessions) {
-    //   gradesModel.create({grade_name}).then(data => {
-    //     res.json(data)
-    //   })
-    // }
   }
 
   getAllGrades(req, res, next) {
-    gradesModel.find({}).then(data => {
-      res.json(data)
-    }, (err) => {
-      console.log(err);
+    gradesModel.find({}, function (err, docs) {
+      if (err) console.log(err);
+      res.json({
+        status: 200,
+        message: 'ok',
+        data: docs
+      })
     })
   }
 }

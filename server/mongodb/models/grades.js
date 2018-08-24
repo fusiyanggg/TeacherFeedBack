@@ -7,9 +7,9 @@ const grades = new Schema({
   grade_name: String,
   create_time: {type: Date, default: Date.now},
   _index: {type: Number},
-  lessions: [
+  lessons: [
     {
-      lession_name: {type: String, index: true},
+      lesson_name: {type: String, index: true},
       create_time: {type: Date, default: Date.now},
       creator: String
     }

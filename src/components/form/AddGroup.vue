@@ -17,7 +17,7 @@
 
   export default {
     props: {
-
+      groupData:{type:Array},
       addGroupData: {
         type: Array,
       }
@@ -50,9 +50,9 @@
 //          headers: {"Content-Type": "application/x-www-form-urlencoded"},
 //        });
 //        res.post(url, "grade_name=sd&lessions=dd")
-        let data = {grade_name: this.GroupName, lessions: this.subGroupName};
-        let res =await utils.createGrade(data);
-        if(res.status==200){
+        let data = {grade_name: this.GroupName, lesson_name: this.subGroupName};
+        let res = await utils.createGrade(data);
+        if (res.status == 200) {
           this.$emit('load-grade')
         }
       },

@@ -2,21 +2,23 @@
   <div class="layout">
     <Sider :style="{position: 'fixed', height: '100vh', left: 0, overflow: 'auto'}">
       <Menu :active-name="lastOpen" theme="dark" :open-names="lastOpen?[lastOpen.substr(0,lastOpen.indexOf('-'))]:[0]"
-            width="auto" :accordion=true @on-select="handleSelect">
+            width="auto" ref="menu" :accordion=true @on-select="handleSelect">
         <Submenu v-for="(grade,index) in grades" :name="grade.grade_name" :key="index">
           <template slot="title">
             <Icon type="ios-navigate"></Icon>
             {{grade.grade_name}}
           </template>
-          <MenuItem :name="grade.grade+'-'+lessons.lesson" v-for="(lessons,index) in grade.lessons" :key="index">
-            {{lessons.lesson}}
+          <MenuItem :name="grade.grade_name+'-'+lesson.lesson_name" v-for="(lesson,index) in grade.lessons"
+                    :key="index">
+            {{lesson.lesson_name}}
           </MenuItem>
         </Submenu>
       </Menu>
 
       <transition name=slide-fade>
-        <AddGroup class="modal-add" v-if="modal" :group-data="addGroupData" @hide="handleSwitchHide"
-                  @load-grad=""></AddGroup>
+        <AddGroup class="modal-add" v-if="modal" :group-data="grades" @hide="handleSwitchHide"
+                  @load-grade="reloadData">
+        </AddGroup>
 
       </transition>
       <div class="add-grade" @click="handleSwitchHide">
@@ -65,14 +67,18 @@
 
       },
       handleSwitchHide() {
-        this.modal = !this.modal
+        this.modal = !this.modal;
       },
       loadData() {
         return utils.loadData()
+      },
+      async reloadData() {
+        let newData = await this.loadData();
+        this.grades = newData.data.data;
       }
 
     },
-   async beforeMount() {
+    async beforeCreate() {
       let lastOpen = localStorage.getItem('last-select');
       if (lastOpen) {
         this.lastOpen = lastOpen;
@@ -80,10 +86,9 @@
       }
 
       //let res = await axios.get(window.location.protocol + "//" + window.location.hostname + ':9000/grades/all');
-      let res =await utils.loadData();
+      let res = await utils.loadData();
       console.log(res);
-      this.grades = res.data;
-
+      this.grades = res.data.data;
     },
     components: {
       AddGroup
