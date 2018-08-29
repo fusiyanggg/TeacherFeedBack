@@ -5,8 +5,9 @@ mongoose.connect(config.dburl, {useNewUrlParser: true, autoIndex: false});
 
 const db = mongoose.connection;
 db.on('error', () => {
-  console.log('DB connection error');
+  console.error('DB connection error. Did you start DBServer?');
   mongoose.disconnect();
+  process.exit(1);
 });
 
 db.once('open', () => {

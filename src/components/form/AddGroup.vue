@@ -14,22 +14,24 @@
 </template>
 <script>
   import utils from '../../tools/utils'
+  import {mapActions} from 'vuex'
 
   export default {
     props: {
-      groupData:{type:Array},
+      groupData: {type: Array},
       addGroupData: {
         type: Array,
       }
     },
+
     data() {
       return {
-
         groupInput: false,
         GroupName: '',
         subGroupName: ''
       }
     },
+
     computed: {
       grades() {
         return this.groupData ? this.groupData.map(v => v.grade_name) : null
@@ -38,28 +40,22 @@
         return !(this.subGroupName && this.GroupName)
       }
     },
+
     methods: {
+      ...mapActions('menu', ['createGrade']),
       handleChange(value) {
         this.groupInput = value === 'addNew';
         this.GroupName = this.groupInput ? '' : value
       },
       async handleSubmit(e) {
-//        let url = window.location.protocol + "//" + window.location.hostname + ':9000/grades/create';
-//        let res = axios.create({
-//          baseURL: url,
-//          headers: {"Content-Type": "application/x-www-form-urlencoded"},
-//        });
-//        res.post(url, "grade_name=sd&lessions=dd")
         let data = {grade_name: this.GroupName, lesson_name: this.subGroupName};
-        let res = await utils.createGrade(data);
-        if (res.status == 200) {
-          this.$emit('load-grade')
-        }
+        let res = await this.$store.dispatch('menu/createGrade', data);
+        console.log(res);
+        this.$emit('submit', data)
       },
       handleMask(e) {
         this.$emit('hide')
       }
-
     }
   }
 </script>
@@ -81,10 +77,8 @@
     }
 
     .slc-opt {
-      /*text-align: center;*/
     }
     .mask {
-      /*background: rgba(0, 0, 0, 0.3);*/
       position: fixed;
       top: 0;
       right: 0;

@@ -1,8 +1,9 @@
 <template>
   <div class="layout">
     <Sider :style="{position: 'fixed', height: '100vh', left: 0, overflow: 'auto'}">
-      <Menu :active-name="lastOpen" theme="dark" :open-names="lastOpen?[lastOpen.substr(0,lastOpen.indexOf('-'))]:[0]"
-            width="auto" ref="menu" :accordion=true @on-select="handleSelect">
+      <Menu theme="dark" :openNames="lastOpen?[lastOpen.substr(0,lastOpen.indexOf('-'))]:[0]"
+            :accordion="true" :activeName="lastOpen" ref="menu" @on-select="handleSelect"
+            width="auto">
         <Submenu v-for="(grade,index) in grades" :name="grade.grade_name" :key="index">
           <template slot="title">
             <Icon type="ios-navigate"></Icon>
@@ -17,9 +18,8 @@
 
       <transition name=slide-fade>
         <AddGroup class="modal-add" v-if="modal" :group-data="grades" @hide="handleSwitchHide"
-                  @load-grade="reloadData">
+                  @submit="handleNewGroupSubmit">
         </AddGroup>
-
       </transition>
       <div class="add-grade" @click="handleSwitchHide">
         <Icon type="md-add"/>
@@ -41,58 +41,62 @@
   </div>
 </template>
 <script>
+
   import AddGroup from './form/AddGroup'
-  import utils from '../tools/utils'
+  import {mapGetters, mapState, mapMutations, mapActions} from 'vuex'
 
   export default {
+
     data() {
       return {
-        grades: [],
         value1: '1',
-        bread: [],
+        lastOpen: '',
         path: null,
-        lastOpen: null,
         addGroupData: [{grade_name: 'child'}, {grade_name: 'class1'}],
-        modal: false
+        modal: false,
+        open: []
       }
     },
+
+    computed: {
+      ... mapState({
+        grades: (state) => state.menu.grades,
+      }),
+      bread() {
+        return this.lastOpen ? this.lastOpen.split('-') : ['null']
+      }
+    },
+
+    components: {
+      AddGroup
+    },
+
     methods: {
+      ...mapActions('menu', ['initGradesList']),
       handleSelect(evt) {
         this.$router.push('/tab');
-        this.bread = evt.split('-');
-        localStorage.setItem('last-select', evt)
+        this.lastOpen = evt;
+        localStorage.setItem('lastOpen', evt);
       },
-
-      handleAddNewGroup() {
-
+      handleNewGroupSubmit(value) {
+        this.lastOpen = value.grade_name + '-' + value.lesson_name;
+        localStorage.setItem('lastOpen', this.lastOpen);
+        this.$refs.menu.updateActiveName()
       },
       handleSwitchHide() {
         this.modal = !this.modal;
       },
-      loadData() {
-        return utils.loadData()
-      },
-      async reloadData() {
-        let newData = await this.loadData();
-        this.grades = newData.data.data;
-      }
-
     },
-    async beforeCreate() {
-      let lastOpen = localStorage.getItem('last-select');
-      if (lastOpen) {
-        this.lastOpen = lastOpen;
-        this.bread = this.lastOpen.split('-');
-      }
 
-      //let res = await axios.get(window.location.protocol + "//" + window.location.hostname + ':9000/grades/all');
-      let res = await utils.loadData();
-      console.log(res);
-      this.grades = res.data.data;
+    async created() {
+      let lastOpen = localStorage.getItem('lastOpen');
+      this.lastOpen = lastOpen ? lastOpen : '';
+      await this.$store.dispatch('menu/initGradesList');
+      this.$nextTick(() => {
+        this.$refs.menu.updateActiveName();
+        this.$refs.menu.updateOpened()
+      })
     },
-    components: {
-      AddGroup
-    }
   }
 </script>
 
@@ -117,11 +121,11 @@
   }
 
   .layout {
-    /*border: 1px solid #d7dde4;*/
+    border: 1px solid #d7dde4;
     background: #f5f7f9;
     position: relative;
 
-    /*border-radius: 4px;*/
+    border-radius: 4px;
     overflow: hidden;
 
     .modal-add {
