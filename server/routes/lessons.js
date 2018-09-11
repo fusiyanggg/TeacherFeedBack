@@ -4,5 +4,5 @@ const router = express.Router();
 router.get('/all', lesson.getAllLessons);
 router.get('/cur', lesson.getCurrentLesson);
 router.post('/add', lesson.addLesson);
-router.post('/update',lesson.updateLesson)
+router.post('/update',lesson.updateLesson);
 module.exports = router;
